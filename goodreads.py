@@ -12,16 +12,14 @@ class Book(object):
         self.author = ""
         self.title = et.find('title').text
         self.isbn13 = et.find("isbn13").text
-        #<asin></asin>
-        #<kindle_asin></kindle_asin>
-        # <marketplace_id></marketplace_id>
-        # <country_code>ES</country_code>
-        # <publication_year>2006</publication_year>
-        # <publication_month>9</publication_month>
-        # <publication_day>16</publication_day>
-        # <publisher>Scholastic Inc.</publisher>
-        # <language_code>eng</language_code>
-        # <is_ebook>false</is_ebook><description>
+        self.asin = et.find("asin").text
+        self.kindle_asin = et.find("kindle_asin").text
+        self.marketplace_id = et.find("marketplace_id").text
+        self.country_code = et.find("country_code").text
+        self.publication_date = et.find("publication_year").text + "/" + et.find("publication_month").text + "/" + et.find("publication_day").text
+        self.publisher = et.find("publisher").text
+        self.language_code = et.find("language_code").text
+        self.is_ebook = et.find("is_ebook").text
  
     def __repr__(self):
         return str(self.__dict__)
@@ -35,7 +33,7 @@ class Book(object):
 def get_books(your_key):
     urlbase = "https://www.goodreads.com/book/show/"
     params = { 
-        "key" : your_key 
+        "key" : your_key,
         "format" : "xml"
     }
     last_book = 6#00000000 # 44441958
