@@ -4,6 +4,8 @@ import time
 import csv
 
 class Book(object):
+    headers = ["id", "isbn", "author", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code", "publication_date", "publisher", "language_code", "is_ebook"]
+
     def __init__(self, elementTree):
         et = elementTree.find('book')
 
@@ -56,7 +58,7 @@ def get_books(your_key):
 
 def write_to_csv(books, filename="books.csv", delimiter=","):
     f = open(filename, "w") 
-    w = csv.DictWriter(f, ["id", "isbn", "author", "title", "isbn13"], delimiter=delimiter)
+    w = csv.DictWriter(f, Book.headers, delimiter=delimiter)
     for book in books:
         w.writerow(book.__dict__)
     f.close()
