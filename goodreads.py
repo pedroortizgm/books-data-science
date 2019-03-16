@@ -7,7 +7,9 @@ class Book(object):
     headers = ["id", "isbn", "author", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code", 
         "publication_date", "publisher", "language_code", "is_ebook", "books_count", "best_book_id", "reviews_count", 
         "ratings_sum", "ratings_count", "text_reviews_count", "original_publication_date", "original_title", "media_type", 
-        "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1"]
+        "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1", 
+        "average_rating", "num_pages", "format", "edition_information", "ratings_count_global", 
+        "text_reviews_count_global", "authors", "to_read", "read", "currently_reading"]
 
     def __init__(self, elementTree):
         et = elementTree.find('book')
@@ -41,7 +43,31 @@ class Book(object):
         self.num_ratings_3 = num_ratings[2].split(":")[1]
         self.num_ratings_2 = num_ratings[3].split(":")[1]
         self.num_ratings_1 = num_ratings[4].split(":")[1]
- 
+        self.average_rating = et.find("average_rating").text
+        self.num_pages = et.find("num_pages").text
+        self.format = et.find("format").text
+        self.edition_information = et.find("edition_information").text
+        self.ratings_count_global = et.find("ratings_count").text
+        self.text_reviews_count_global = et.find("text_reviews_count").text
+        authors = et.find("authors").getchildren()
+        self.authors = []
+        for author in authors:
+            self.authors.append(author.find("name").text)
+        # find from the popular shelves, if people wants to read, is reading or have already read the book
+        popular_shelves = et.find("popular_shelves").getchildren()
+        self.read = 0
+        for shelve in popular_shelves:
+            shelve_name = shelve.attrib["name"]
+            shelve_value = int(shelve.attrib["count"])
+            if (shelve_name == "to-read"):
+                self.to_read = shelve_value
+            elif (shelve_name == "currently-reading"):
+                self.currently_reading = shelve_value
+            else:
+                if (shelve_name.find("read") > -1):
+                    self.read += shelve_value     
+   
+
     def __repr__(self):
         return str(self.__dict__)
 
