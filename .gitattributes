@@ -1,12 +1,12 @@
 *           text=auto
 *.sh        text eol=lf
+*.csv       text eol=lf
 *.pxd       text
 *.py        text
 *.py3       text
 *.pyw       text
 *.pyx       text
 *.xml       text
-*.csv       text
 *.json      text
 *.jar       binary
 *.png       binary
