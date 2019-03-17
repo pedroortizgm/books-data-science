@@ -75,17 +75,15 @@ class Book(object):
         return line
 
 
-def get_books(your_key, writer, file):
+def get_books(your_key, start, end, writer, file):
     urlbase = "https://www.goodreads.com/book/show/"
     params = {
         "key": your_key,
-        "format": "xml"
+        "format":"xml"
     }
-    first_book = 1
-    last_book = 10
-    loop_step = 5
+    loop_step = 2
     error = {}
-    for book_id in range(first_book, last_book + 1, loop_step):
+    for book_id in range(start, end + 1, loop_step):
         url = urlbase + str(book_id)
         print(url)
         r = requests.get(url, params=params)
@@ -130,5 +128,5 @@ if not API_KEY:
 
 # books, error = get_books(key)
 writer, file = create_csv()
-error = get_books(API_KEY, writer, file)
+error = get_books(API_KEY, 1, 2000, writer, file)
 print(error)
