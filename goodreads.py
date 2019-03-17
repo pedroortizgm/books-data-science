@@ -96,7 +96,7 @@ def get_books(your_key, writer, file):
                 error[book_id] = e
         else:
             error[book_id] = r.status_code
-        time.sleep(0.5)
+        time.sleep(1)
     file.close()
     return error
 
