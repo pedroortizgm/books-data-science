@@ -1,0 +1,15 @@
+*           text=auto
+*.sh        text eol=lf
+*.pxd       text
+*.py        text
+*.py3       text
+*.pyw       text
+*.pyx       text
+*.xml       text
+*.csv       text
+*.json      text
+*.jar       binary
+*.png       binary
+*.gif       binary
+*.jpg       binary
+*.jpeg      binary
