@@ -2,15 +2,9 @@ import requests
 import xml.etree.ElementTree as ET
 import time
 import csv
+import os
 
 class Book(object):
-    headers = ["id", "isbn", "author", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code", 
-        "publication_date", "publisher", "language_code", "is_ebook", "books_count", "best_book_id", "reviews_count", 
-        "ratings_sum", "ratings_count", "text_reviews_count", "original_publication_date", "original_title", "media_type", 
-        "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1", 
-        "average_rating", "num_pages", "format", "edition_information", "ratings_count_global", 
-        "text_reviews_count_global", "authors", "to_read", "read", "currently_reading"]
-
     def __init__(self, elementTree):
         et = elementTree.find('book')
 
@@ -77,37 +71,47 @@ class Book(object):
             line += str(self.__dict__[key]) + separator
         return line
 
-def get_books(your_key):
+def get_books(your_key, writer, file):
     urlbase = "https://www.goodreads.com/book/show/"
     params = { 
         "key" : your_key,
         "format" : "xml"
     }
-    last_book = 6#00000000 # 44441958
-    loop_step = 1#1000000
-    books = []
+    first_book = 1
+    last_book = 10
+    loop_step = 5
     error = {}
-    for book_id in range(1, last_book, loop_step):
+    for book_id in range(first_book, last_book + 1, loop_step):
         url = urlbase + str(book_id)
         print(url)
         r = requests.get(url, params = params)
         if (r.status_code == 200):
             try:
-                books.append(Book(ET.fromstring(r.text)))
+                write_to_csv(writer, Book(ET.fromstring(r.text)))
             except Exception as e:
                 error[book_id] = e
         else:
             error[book_id] = r.status_code
-        time.sleep(1)
-    return books, error
+        time.sleep(0.5)
+    file.close()
+    return error
 
-def write_to_csv(books, filename="books.csv", delimiter=","):
-    f = open(filename, "w") 
-    w = csv.DictWriter(f, Book.headers, delimiter=delimiter)
-    w.writeheader()
-    for book in books:
-        w.writerow(book.__dict__)
-    f.close()
+def write_to_csv(w, book):  
+    w.writerow(book.__dict__)
+
+def create_csv(filename="books.csv", delimiter=","):
+    headers = ["id", "isbn", "author", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code", 
+        "publication_date", "publisher", "language_code", "is_ebook", "books_count", "best_book_id", "reviews_count", 
+        "ratings_sum", "ratings_count", "text_reviews_count", "original_publication_date", "original_title", "media_type", 
+        "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1", 
+        "average_rating", "num_pages", "format", "edition_information", "ratings_count_global", 
+        "text_reviews_count_global", "authors", "to_read", "read", "currently_reading"]
+
+    f = open(filename, "a+") 
+    w = csv.DictWriter(f, headers, delimiter=delimiter)
+    if(os.stat(filename).st_size == 0):
+        w.writeheader()
+    return w, f
 
 def read_book(filename="book1.xml"):
     f = open(filename, "r")
@@ -115,6 +119,7 @@ def read_book(filename="book1.xml"):
     return [book], {}
 
 # books, error = get_books(key)
-books, error = read_book()
-write_to_csv(books, delimiter=",")
+writer, file = create_csv()
+api_key = None
+error = get_books(api_key, writer, file)
 print(error)
