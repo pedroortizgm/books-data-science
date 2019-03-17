@@ -121,13 +121,6 @@ def create_csv(filename="books.csv", delimiter=","):
         w.writeheader()
     return w, f
 
-
-def read_book(filename="book1.xml"):
-    f = open(filename, "r")
-    book = Book(ET.parse(f))
-    return [book], {}
-
-
 # Load .env variables
 load_dotenv()
 
