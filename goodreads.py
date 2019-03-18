@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import time
 import csv
 import os
-import sys
+import sys, getopt
 from dotenv import load_dotenv
 
 
@@ -13,7 +13,6 @@ class Book(object):
 
         self.id = et.find('id').text
         self.isbn = et.find('isbn').text
-        self.author = ""
         self.title = et.find('title').text
         self.isbn13 = et.find("isbn13").text
         self.asin = et.find("asin").text
@@ -50,8 +49,35 @@ class Book(object):
         self.ratings_count_global = et.find("ratings_count").text
         self.text_reviews_count_global = et.find("text_reviews_count").text
         self.authors = []
-        for author in et.find("authors"):
-            self.authors.append(author.find("name").text)
+        self.illustrator = []
+        self.contributor = []
+        self.editor = []
+        self.translator = []
+        self.narrator = []
+        for a in et.find("authors"):
+            author = a.find("name").text 
+            role = a.find("role").text          
+            if (role is None): 
+                self.authors.append(author)
+            elif (role == 'Illustrator'):
+                self.illustrator.append(author)
+            elif (role == 'Contributor'): 
+                self.contributor.append(author)
+            elif (role == 'Editor'):
+                self.editor.append(author)
+            elif (role == 'Translator'):
+                self.translator.append(author)
+            elif (role == 'Narrator'):
+                self.narrator.append(author)
+            else:
+                print("found role " + role + " on book " + self.id)
+        self.authors.sort()
+        self.illustrator.sort()
+        self.contributor.sort()
+        self.editor.sort()
+        self.translator.sort()
+        self.narrator.sort()
+
         # find from the popular shelves, if people wants to read, is reading or have already read the book
         self.read = 0
         for shelve in et.find("popular_shelves"):
@@ -73,15 +99,17 @@ class Book(object):
         for key in self.__dict__.keys():
             line += str(self.__dict__[key]) + separator
         return line
+    
+    def write_to_csv(self, w):
+        w.writerow(self.__dict__)
 
 
-def get_books(your_key, start, end, writer, file):
+def get_books(your_key, writer, file, start, end, loop_step):
     urlbase = "https://www.goodreads.com/book/show/"
     params = {
         "key": your_key,
         "format":"xml"
     }
-    loop_step = 2
     error = {}
     for book_id in range(start, end + 1, loop_step):
         url = urlbase + str(book_id)
@@ -89,7 +117,8 @@ def get_books(your_key, start, end, writer, file):
         r = requests.get(url, params=params)
         if (r.status_code == 200):
             try:
-                write_to_csv(writer, Book(ET.fromstring(r.text)))
+                book = Book(ET.fromstring(r.text))
+                book.write_to_csv(writer)
             except Exception as e:
                 error[book_id] = e
         else:
@@ -99,19 +128,16 @@ def get_books(your_key, start, end, writer, file):
     return error
 
 
-def write_to_csv(w, book):
-    w.writerow(book.__dict__)
-
-
 def create_csv(filename="books.csv", delimiter=","):
-    headers = ["id", "isbn", "author", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code",
+    headers = ["id", "isbn", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code",
                "publication_date", "publisher", "language_code", "is_ebook", "books_count", "best_book_id",
                "reviews_count",
                "ratings_sum", "ratings_count", "text_reviews_count", "original_publication_date", "original_title",
                "media_type",
                "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1",
                "average_rating", "num_pages", "format", "edition_information", "ratings_count_global",
-               "text_reviews_count_global", "authors", "to_read", "read", "currently_reading"]
+               "text_reviews_count_global", "authors", 'illustrator', 'contributor', 'editor', 'translator', 'narrator', 
+               "to_read", "read", "currently_reading"]
 
     f = open(filename, "a+")
     w = csv.DictWriter(f, headers, delimiter=delimiter)
@@ -119,14 +145,54 @@ def create_csv(filename="books.csv", delimiter=","):
         w.writeheader()
     return w, f
 
-# Load .env variables
-load_dotenv()
+def load_books(filename, start, end, loop_step):
+    # books, error = get_books(key)
+    writer, f = create_csv(filename)
+    error = get_books(API_KEY, writer, f, start, end, loop_step)
+    print(error)
 
-API_KEY = os.getenv("API_KEY", False)
-if not API_KEY:
-    sys.exit("Error: API_KEY not found")
+def read_book(inputfile = "book1.xml", outputfile = "book.csv"):
+    writer, f = create_csv(outputfile)
+    try:
+        book = Book(ET.parse(inputfile))
+        book.write_to_csv(writer)
+    except Exception as e:
+        print(e)
+    
+def main(argv):
+    output_file = "books.csv"
+    input_file = None
+    start = 1
+    end = 2000
+    loop_step = 1
+    try:
+        opts, args = getopt.getopt(argv, "hi:o:", ["ifile", "ofile"])
+    except getopt.GetoptError:
+        print('goodreads.py -o outputfile -i inputfile -s start -e end -l loop_step')
+        sys.exit(1)
+    for opt, arg in opts:
+        if opt == '-h':
+            print("goodreads.py -o outputfile -i inputfile -s start -e end -l loop_step")
+            sys.exit()
+        elif opt in ("-i", "--ifile"): # reads book from file
+            input_file = arg
+        elif opt in ("-o", "--ofile"): # writes into file
+            output_file = arg
+        elif opt in ("-s"):
+            start = arg
+        elif opt in ("-e"):
+            end = arg
+        elif opt in ("-l"):
+            loop_step = arg
+    if (input_file is None): # not read book from file, so, run getbooks
+        load_books(output_file, start, end, loop_step)
+    else:
+        read_book(input_file, output_file)
 
-# books, error = get_books(key)
-writer, file = create_csv()
-error = get_books(API_KEY, 1, 2000, writer, file)
-print(error)
+if __name__ == "__main__":
+    # Load .env variables
+    load_dotenv()
+    API_KEY = os.getenv("API_KEY", False)
+    if not API_KEY:
+        sys.exit("Error: API_KEY not found")
+    main(sys.argv[1:])
