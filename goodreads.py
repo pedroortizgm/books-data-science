@@ -146,7 +146,6 @@ def create_csv(filename="books.csv", delimiter=","):
     return w, f
 
 def load_books(filename, start, end, loop_step):
-    # books, error = get_books(key)
     writer, f = create_csv(filename)
     error = get_books(API_KEY, writer, f, start, end, loop_step)
     print(error)
