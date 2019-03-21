@@ -171,7 +171,7 @@ def main(argv):
     end = 2000
     loop_step = 1
     try:
-        opts, args = getopt.getopt(argv, "hi:o:", ["ifile", "ofile"])
+        opts, args = getopt.getopt(argv, "hi:o:s:e:l:", ["ifile", "ofile"])
     except getopt.GetoptError:
         print('goodreads.py -o outputfile -i inputfile -s start -e end -l loop_step')
         sys.exit(1)
@@ -184,12 +184,13 @@ def main(argv):
         elif opt in ("-o", "--ofile"): # writes into file
             output_file = arg
         elif opt in ("-s"):
-            start = arg
+            start = int(arg)
         elif opt in ("-e"):
-            end = arg
+            end = int(arg)
         elif opt in ("-l"):
-            loop_step = arg
+            loop_step = int(arg)
     if (input_file is None): # not read book from file, so, run getbooks
+        print("load books: " + output_file + " " + str(start) + " " + str(end) + " " + str(loop_step))
         load_books(output_file, start, end, loop_step)
     else:
         read_book(input_file, output_file)
