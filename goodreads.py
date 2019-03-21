@@ -4,6 +4,7 @@ import time
 import csv
 import os
 import sys, getopt
+import logging
 from dotenv import load_dotenv
 
 
@@ -19,8 +20,16 @@ class Book(object):
         self.kindle_asin = et.find("kindle_asin").text
         self.marketplace_id = et.find("marketplace_id").text
         self.country_code = et.find("country_code").text
-        self.publication_date = "/".join(
-            [et.find("publication_year").text, et.find("publication_month").text, et.find("publication_day").text])
+        year = et.find("publication_year").text
+        month = et.find("publication_month").text
+        day = et.find("publication_day").text
+        if (month is None):
+            month = "1"
+        if (day is None):
+            day = "1"
+        if (not year is None):
+            self.publication_date = "/".join([year, month, day])
+
         self.publisher = et.find("publisher").text
         self.language_code = et.find("language_code").text
         self.is_ebook = et.find("is_ebook").text
@@ -31,9 +40,17 @@ class Book(object):
         self.ratings_sum = work.find("ratings_sum").text
         self.ratings_count = work.find("ratings_count").text
         self.text_reviews_count = work.find("text_reviews_count").text
-        self.original_publication_date = "/".join(
-            [work.find("original_publication_year").text, work.find("original_publication_month").text,
-             work.find("original_publication_day").text])
+        
+        year = work.find("original_publication_year").text
+        month = work.find("original_publication_month").text 
+        day = work.find("original_publication_day").text 
+        if (month is None):
+            month = "1"
+        if (day is None):
+            day = "1"
+        if (not year is None):
+            self.original_publication_date = "/".join([year, month, day])
+
         self.original_title = work.find("original_title").text
         self.media_type = work.find("media_type").text
         num_ratings = work.find("rating_dist").text.split("|")
@@ -70,7 +87,8 @@ class Book(object):
             elif (role == 'Narrator'):
                 self.narrator.append(author)
             else:
-                print("found role " + role + " on book " + self.id)
+                logging.info("found role " + role + " on book " + self.id)
+
         self.authors.sort()
         self.authors = ",".join(self.authors)
         self.illustrator.sort()
@@ -119,22 +137,22 @@ def get_books(your_key, writer, file, start, end, loop_step):
     error = {}
     for book_id in range(start, end + 1, loop_step):
         url = urlbase + str(book_id)
-        print(url)
+        logging.info(url)
         r = requests.get(url, params=params)
         if (r.status_code == 200):
             try:
                 book = Book(ET.fromstring(r.text))
                 book.write_to_csv(writer)
             except Exception as e:
-                error[book_id] = e
+                logging.error("Error reading book " + str(book_id), exc_info = True)
         else:
-            error[book_id] = r.status_code
-        time.sleep(1)
+            logging.error("Error reading book " + str(book_id) + ": " + str(r.status_code))
+        #time.sleep(1)
     file.close()
     return error
 
 
-def create_csv(filename="books.csv", delimiter=","):
+def create_csv(filename="books.csv", delimiter=",", create_header=True):
     headers = ["id", "isbn", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code",
                "publication_date", "publisher", "language_code", "is_ebook", "books_count", "best_book_id",
                "reviews_count",
@@ -146,15 +164,15 @@ def create_csv(filename="books.csv", delimiter=","):
                "to_read", "read", "currently_reading"]
 
     f = open(filename, "a+")
-    w = csv.DictWriter(f, headers, delimiter=delimiter)
+    if create_header:
+        w = csv.DictWriter(f, headers, delimiter=delimiter)
     if (os.stat(filename).st_size == 0):
         w.writeheader()
     return w, f
 
 def load_books(filename, start, end, loop_step):
     writer, f = create_csv(filename)
-    error = get_books(API_KEY, writer, f, start, end, loop_step)
-    print(error)
+    get_books(API_KEY, writer, f, start, end, loop_step)
 
 def read_book(inputfile = "book1.xml", outputfile = "book.csv"):
     writer, f = create_csv(outputfile)
@@ -162,7 +180,7 @@ def read_book(inputfile = "book1.xml", outputfile = "book.csv"):
         book = Book(ET.parse(inputfile))
         book.write_to_csv(writer)
     except Exception as e:
-        print(e)
+        logging.error("error reading book", exc_info = True)
     
 def main(argv):
     output_file = "books.csv"
@@ -194,6 +212,9 @@ def main(argv):
         load_books(output_file, start, end, loop_step)
     else:
         read_book(input_file, output_file)
+
+logging.basicConfig(filename="app.log", filemode="w", format="'%(name)s - %(levelname)s - %(message)s'", level=logging.INFO)
+
 
 if __name__ == "__main__":
     # Load .env variables
