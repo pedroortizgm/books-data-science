@@ -72,11 +72,17 @@ class Book(object):
             else:
                 print("found role " + role + " on book " + self.id)
         self.authors.sort()
+        self.authors = ",".join(self.authors)
         self.illustrator.sort()
+        self.illustrator = ",".join(self.illustrator)
         self.contributor.sort()
+        self.contributor = ",".join(self.contributor)
         self.editor.sort()
+        self.editor = ",".join(self.editor)
         self.translator.sort()
+        self.translator = ",".join(self.translator)
         self.narrator.sort()
+        self.narrator = ",".join(self.narrator)
 
         # find from the popular shelves, if people wants to read, is reading or have already read the book
         self.read = 0
