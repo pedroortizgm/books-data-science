@@ -9,6 +9,27 @@ from dotenv import load_dotenv
 
 
 class Book(object):
+    all_genres = ['fiction', 'fantasy', 'romance', 'non-fiction', 'young-adult', 'mystery', 'classics', 'contemporary', 'historical-fiction', 
+    'history', 'manga', 'science-fiction', 'comics', 'paranormal', 'adult', 'historical', 'horror', 'graphic-novels', 'thriller', 'adventure', 
+    'poetry', 'novels', 'philosophy', 'biography', 'short-stories', 'childrens', 'picture-books', 'contemporary-romance', 'humor', 'science', 
+    'crime', 'urban-fantasy', 'literature', 'adult-fiction', 'chick-lit', 'new-adult', 'drama', 'suspense', 'christian', 'erotica', 
+    'historical-romance', 'magic', 'psychology', 'politics', 'memoir', 'paranormal-romance', 'school', 'reference', 'religion', 'unfinished', 
+    'family', 'vampires', 'supernatural', 'realistic-fiction', 'dystopia', 'mystery-thriller', 'art', 'amazon', 'middle-grade', 'business', 
+    '20th-century', 'action', 'american', 'travel', 'literary-fiction', 'love', 'funny', 'self-help', 'lgbt', 'war', 'teen', 'animals', 'dark', 
+    'mythology', 'college', 'cookbooks', 'music', 'high-school', 'comedy', 'novella', 'feminism', 'bdsm', 'plays', 'relationships', 
+    'spirituality', '21st-century', 'modern', 'education', 'death', 'romantic-suspense', 'christmas', 'essays', 'sports', 'christian-fiction', 
+    'theology', 'speculative-fiction', 'writing', 'juvenile', 'read-for-school', 'science-fiction-fantasy', 'roman', 'sociology', '19th-century', 
+    'economics', 'inspirational', 'abuse', 'research', 'health', 'detective', 'high-fantasy', 'cultural', 'food', 'magical-realism', 'autobiography', 
+    'classic-literature', 'fairy-tales', 'biography-memoir', 'erotic-romance', 'star-wars', 'academic', 'romantic', 'christianity', 'm-m-romance', 
+    'france', 'british-literature', 'steampunk', 'cozy-mystery', 'gothic', 'nature', 'time-travel', 'parenting', 'epic', 'united-states', 
+    'american-history', 'survival', 'english-literature', 'love-story', 'cooking', 'epic-fantasy', 'witches', 'true-crime', 'gay', 
+    'modern-classics', 'dragons', 'mental-health', 'international', 'movies', 'society', 'collections', 'ghosts', 'language', 'demons', 'faith', 
+    'graphic-novels-comics', 'zombies', 'queer', 'werewolves', 'textbooks', 'film', 'post-apocalyptic', 'anthologies', 'africa', 'japan', 
+    'harlequin', 'shapeshifters', 'retellings', 'teaching', 'chapter-books', 'medieval', 'social', 'asia', 'murder-mystery', 'angels', 'regency', 
+    'european-literature', 'canon', 'tragedy', 'leadership', 'mental-illness', 'personal-development', 'aliens', 'victorian', 'russia', 
+    'social-issues', 'grad-school', 'menage', 'new-york', 'books-about', 'marvel', 'anthropology', 'holiday', 'marriage', 'class', 'criticism', 
+    'technology', 'theatre', 'americana', 'superheroes', 'medical']
+
     def __init__(self, elementTree):
         et = elementTree.find('book')
 
@@ -101,7 +122,8 @@ class Book(object):
         self.translator = ",".join(self.translator)
         self.narrator.sort()
         self.narrator = ",".join(self.narrator)
-
+        
+        self.genres = []
         # find from the popular shelves, if people wants to read, is reading or have already read the book
         self.read = 0
         for shelve in et.find("popular_shelves"):
@@ -111,9 +133,12 @@ class Book(object):
                 self.to_read = shelve_value
             elif (shelve_name == "currently-reading"):
                 self.currently_reading = shelve_value
-            else:
-                if (shelve_name.find("read") > -1):
+            elif (shelve_name.find("read") > -1):
                     self.read += shelve_value
+            elif shelve_name in self.all_genres:
+                self.genres.append(shelve_name)
+        self.genres.sort()
+        self.genres = ",".join(self.genres)
 
     def __repr__(self):
         return str(self.__dict__)
@@ -161,7 +186,7 @@ def create_csv(filename="books.csv", delimiter=",", create_header=True):
                "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1",
                "average_rating", "num_pages", "format", "edition_information", "ratings_count_global",
                "text_reviews_count_global", "authors", 'illustrator', 'contributor', 'editor', 'translator', 'narrator', 
-               "to_read", "read", "currently_reading"]
+               "to_read", "read", "currently_reading", "genres"]
 
     f = open(filename, "a+")
     if create_header:
