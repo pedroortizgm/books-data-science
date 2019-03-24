@@ -4,10 +4,32 @@ import time
 import csv
 import os
 import sys, getopt
+import logging
 from dotenv import load_dotenv
 
 
 class Book(object):
+    all_genres = ['fiction', 'fantasy', 'romance', 'non-fiction', 'young-adult', 'mystery', 'classics', 'contemporary', 'historical-fiction', 
+    'history', 'manga', 'science-fiction', 'comics', 'paranormal', 'adult', 'historical', 'horror', 'graphic-novels', 'thriller', 'adventure', 
+    'poetry', 'novels', 'philosophy', 'biography', 'short-stories', 'childrens', 'picture-books', 'humor', 'science', 
+    'crime', 'urban-fantasy', 'literature', 'adult-fiction', 'chick-lit', 'new-adult', 'drama', 'suspense', 'christian', 'erotica', 
+    'magic', 'psychology', 'politics', 'memoir', 'school', 'reference', 'religion', 'unfinished', 
+    'family', 'vampires', 'supernatural', 'realistic-fiction', 'dystopia', 'mystery-thriller', 'art', 'amazon', 'middle-grade', 'business', 
+    'action', 'american', 'travel', 'literary-fiction', 'love', 'funny', 'self-help', 'lgbt', 'war', 'teen', 'animals', 'dark', 
+    'mythology', 'college', 'cookbooks', 'music', 'high-school', 'comedy', 'novella', 'feminism', 'bdsm', 'plays', 'relationships', 
+    'spirituality', 'modern', 'education', 'death', 'christmas', 'essays', 'sports', 'christian-fiction', 
+    'theology', 'speculative-fiction', 'writing', 'juvenile', 'read-for-school', 'science-fiction-fantasy', 'sociology',
+    'economics', 'inspirational', 'abuse', 'research', 'health', 'detective', 'high-fantasy', 'cultural', 'food', 'magical-realism', 'autobiography', 
+    'classic-literature', 'fairy-tales', 'biography-memoir', 'academic', 'christianity', 
+    'france', 'british-literature', 'steampunk', 'cozy-mystery', 'gothic', 'nature', 'time-travel', 'parenting', 'epic', 
+    'american-history', 'survival', 'english-literature', 'love-story', 'cooking', 'epic-fantasy', 'witches', 'true-crime', 'gay', 
+    'modern-classics', 'mental-health', 'international', 'movies', 'society', 'collections', 'ghosts', 'language', 'demons', 'faith', 
+    'graphic-novels-comics', 'zombies', 'queer', 'werewolves', 'textbooks', 'film', 'post-apocalyptic', 'anthologies',  
+    'harlequin', 'shapeshifters', 'retellings', 'teaching', 'chapter-books', 'medieval', 'social', 'murder-mystery', 'angels', 'regency', 
+    'european-literature', 'canon', 'tragedy', 'leadership', 'mental-illness', 'personal-development', 'aliens', 'victorian',  
+    'social-issues', 'grad-school', 'menage', 'books-about', 'marvel', 'anthropology', 'holiday', 'marriage', 'class', 'criticism', 
+    'technology', 'theatre', 'americana', 'superheroes', 'medical']
+
     def __init__(self, elementTree):
         et = elementTree.find('book')
 
@@ -19,8 +41,16 @@ class Book(object):
         self.kindle_asin = et.find("kindle_asin").text
         self.marketplace_id = et.find("marketplace_id").text
         self.country_code = et.find("country_code").text
-        self.publication_date = "/".join(
-            [et.find("publication_year").text, et.find("publication_month").text, et.find("publication_day").text])
+        year = et.find("publication_year").text
+        month = et.find("publication_month").text
+        day = et.find("publication_day").text
+        if (month is None):
+            month = "1"
+        if (day is None):
+            day = "1"
+        if (not year is None):
+            self.publication_date = "/".join([year, month, day])
+
         self.publisher = et.find("publisher").text
         self.language_code = et.find("language_code").text
         self.is_ebook = et.find("is_ebook").text
@@ -31,9 +61,17 @@ class Book(object):
         self.ratings_sum = work.find("ratings_sum").text
         self.ratings_count = work.find("ratings_count").text
         self.text_reviews_count = work.find("text_reviews_count").text
-        self.original_publication_date = "/".join(
-            [work.find("original_publication_year").text, work.find("original_publication_month").text,
-             work.find("original_publication_day").text])
+        
+        year = work.find("original_publication_year").text
+        month = work.find("original_publication_month").text 
+        day = work.find("original_publication_day").text 
+        if (month is None):
+            month = "1"
+        if (day is None):
+            day = "1"
+        if (not year is None):
+            self.original_publication_date = "/".join([year, month, day])
+
         self.original_title = work.find("original_title").text
         self.media_type = work.find("media_type").text
         num_ratings = work.find("rating_dist").text.split("|")
@@ -70,14 +108,22 @@ class Book(object):
             elif (role == 'Narrator'):
                 self.narrator.append(author)
             else:
-                print("found role " + role + " on book " + self.id)
-        self.authors.sort()
-        self.illustrator.sort()
-        self.contributor.sort()
-        self.editor.sort()
-        self.translator.sort()
-        self.narrator.sort()
+                logging.info("found role " + role + " on book " + self.id)
 
+        self.authors.sort()
+        self.authors = ",".join(self.authors)
+        self.illustrator.sort()
+        self.illustrator = ",".join(self.illustrator)
+        self.contributor.sort()
+        self.contributor = ",".join(self.contributor)
+        self.editor.sort()
+        self.editor = ",".join(self.editor)
+        self.translator.sort()
+        self.translator = ",".join(self.translator)
+        self.narrator.sort()
+        self.narrator = ",".join(self.narrator)
+        
+        self.genres = []
         # find from the popular shelves, if people wants to read, is reading or have already read the book
         self.read = 0
         for shelve in et.find("popular_shelves"):
@@ -87,9 +133,12 @@ class Book(object):
                 self.to_read = shelve_value
             elif (shelve_name == "currently-reading"):
                 self.currently_reading = shelve_value
-            else:
-                if (shelve_name.find("read") > -1):
+            elif (shelve_name.find("read") > -1):
                     self.read += shelve_value
+            elif shelve_name in self.all_genres:
+                self.genres.append(shelve_name)
+        self.genres.sort()
+        self.genres = ",".join(self.genres)
 
     def __repr__(self):
         return str(self.__dict__)
@@ -113,22 +162,22 @@ def get_books(your_key, writer, file, start, end, loop_step):
     error = {}
     for book_id in range(start, end + 1, loop_step):
         url = urlbase + str(book_id)
-        print(url)
+        logging.info(url)
         r = requests.get(url, params=params)
         if (r.status_code == 200):
             try:
                 book = Book(ET.fromstring(r.text))
                 book.write_to_csv(writer)
             except Exception as e:
-                error[book_id] = e
+                logging.error("Error reading book " + str(book_id), exc_info = True)
         else:
-            error[book_id] = r.status_code
-        time.sleep(1)
+            logging.error("Error reading book " + str(book_id) + ": " + str(r.status_code))
+        #time.sleep(1)
     file.close()
     return error
 
 
-def create_csv(filename="books.csv", delimiter=","):
+def create_csv(filename="books.csv", delimiter=",", create_header=True):
     headers = ["id", "isbn", "title", "isbn13", "asin", "kindle_asin", "marketplace_id", "country_code",
                "publication_date", "publisher", "language_code", "is_ebook", "books_count", "best_book_id",
                "reviews_count",
@@ -137,18 +186,18 @@ def create_csv(filename="books.csv", delimiter=","):
                "num_ratings_5", "num_ratings_4", "num_ratings_3", "num_ratings_2", "num_ratings_1",
                "average_rating", "num_pages", "format", "edition_information", "ratings_count_global",
                "text_reviews_count_global", "authors", 'illustrator', 'contributor', 'editor', 'translator', 'narrator', 
-               "to_read", "read", "currently_reading"]
+               "to_read", "read", "currently_reading", "genres"]
 
     f = open(filename, "a+")
-    w = csv.DictWriter(f, headers, delimiter=delimiter)
+    if create_header:
+        w = csv.DictWriter(f, headers, delimiter=delimiter)
     if (os.stat(filename).st_size == 0):
         w.writeheader()
     return w, f
 
 def load_books(filename, start, end, loop_step):
     writer, f = create_csv(filename)
-    error = get_books(API_KEY, writer, f, start, end, loop_step)
-    print(error)
+    get_books(API_KEY, writer, f, start, end, loop_step)
 
 def read_book(inputfile = "book1.xml", outputfile = "book.csv"):
     writer, f = create_csv(outputfile)
@@ -156,7 +205,7 @@ def read_book(inputfile = "book1.xml", outputfile = "book.csv"):
         book = Book(ET.parse(inputfile))
         book.write_to_csv(writer)
     except Exception as e:
-        print(e)
+        logging.error("error reading book", exc_info = True)
     
 def main(argv):
     output_file = "books.csv"
@@ -165,7 +214,7 @@ def main(argv):
     end = 2000
     loop_step = 1
     try:
-        opts, args = getopt.getopt(argv, "hi:o:", ["ifile", "ofile"])
+        opts, args = getopt.getopt(argv, "hi:o:s:e:l:", ["ifile", "ofile"])
     except getopt.GetoptError:
         print('goodreads.py -o outputfile -i inputfile -s start -e end -l loop_step')
         sys.exit(1)
@@ -178,15 +227,19 @@ def main(argv):
         elif opt in ("-o", "--ofile"): # writes into file
             output_file = arg
         elif opt in ("-s"):
-            start = arg
+            start = int(arg)
         elif opt in ("-e"):
-            end = arg
+            end = int(arg)
         elif opt in ("-l"):
-            loop_step = arg
+            loop_step = int(arg)
     if (input_file is None): # not read book from file, so, run getbooks
+        print("load books: " + output_file + " " + str(start) + " " + str(end) + " " + str(loop_step))
         load_books(output_file, start, end, loop_step)
     else:
         read_book(input_file, output_file)
+
+logging.basicConfig(filename="app.log", filemode="w", format="'%(name)s - %(levelname)s - %(message)s'", level=logging.INFO)
+
 
 if __name__ == "__main__":
     # Load .env variables
