@@ -9,3 +9,5 @@ dependencies:
   - jupyter
   - pip:
     - python-dotenv
+    - jupyterlab
+    - wordcloud
