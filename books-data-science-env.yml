@@ -7,5 +7,7 @@ dependencies:
   - pandas
   - numpy
   - jupyter
+  - plotly
   - pip:
     - python-dotenv
+    - bubbly
