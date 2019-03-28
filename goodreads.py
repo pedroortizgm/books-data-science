@@ -189,14 +189,13 @@ def create_csv(filename="books.csv", delimiter=",", create_header=True):
                "to_read", "read", "currently_reading", "genres"]
 
     f = open(filename, "a+")
-    if create_header:
-        w = csv.DictWriter(f, headers, delimiter=delimiter)
-    if (os.stat(filename).st_size == 0):
+    w = csv.DictWriter(f, headers, delimiter=delimiter)
+    if (create_header):
         w.writeheader()
     return w, f
 
-def load_books(filename, start, end, loop_step):
-    writer, f = create_csv(filename)
+def load_books(filename, start, end, loop_step, create_header):
+    writer, f = create_csv(filename, create_header=create_header)
     get_books(API_KEY, writer, f, start, end, loop_step)
 
 def read_book(inputfile = "book1.xml", outputfile = "book.csv"):
@@ -213,10 +212,11 @@ def main(argv):
     start = 1
     end = 2000
     loop_step = 1
+    create_header = True
     try:
-        opts, args = getopt.getopt(argv, "hi:o:s:e:l:", ["ifile", "ofile"])
+        opts, args = getopt.getopt(argv, "hi:o:s:e:l:H", ["ifile", "ofile"])
     except getopt.GetoptError:
-        print('goodreads.py -o outputfile -i inputfile -s start -e end -l loop_step')
+        print('goodreads.py -o outputfile -i inputfile -s start -e end -l loop_step -H skipHeader')
         sys.exit(1)
     for opt, arg in opts:
         if opt == '-h':
@@ -232,9 +232,11 @@ def main(argv):
             end = int(arg)
         elif opt in ("-l"):
             loop_step = int(arg)
+        elif opt in ("-H"):
+            create_header = False
     if (input_file is None): # not read book from file, so, run getbooks
-        print("load books: " + output_file + " " + str(start) + " " + str(end) + " " + str(loop_step))
-        load_books(output_file, start, end, loop_step)
+        print("load books: " + output_file + " " + str(start) + " " + str(end) + " " + str(loop_step) + " " + str(create_header))
+        load_books(output_file, start, end, loop_step, create_header)
     else:
         read_book(input_file, output_file)
 
