@@ -1,11 +1,11 @@
 A borrar,Academicos,Generalista,Adulto,Fantasia,Costumbrista,Cosas,Antologias,Por edades,Por tipo de libro
-marvel,academic,action,adult,aliens,american,animals,anthologies,childrens,comics
-holiday,anthropology,adventure,adult-fiction,angels,american-history,nature,autobiography,grad-school,essays
-amazon,art,chick-lit,dark,demons,americana,movies,biography,college,graphic-novels
-chapter-books,business,class,death,epic,criticism,picture-books,biography-memoir,high-school,graphic-novels-comics
-harlequin,cookbooks,classic-literature,erotica,epic-fantasy,christianity,music,collections,juvenile,manga
-british-literature,cooking,classics,horror,fairy-tales,christian,plays,canon,middle-grade,novella
-english-literature,cultural,christmas,menage,fantasy,christian-fiction,film,memoir,new-adult,novels
+marvel,academic,action,adult,aliens,american,,anthologies,childrens,comics
+holiday,anthropology,adventure,adult-fiction,angels,american-history,,autobiography,grad-school,essays
+amazon,art,chick-lit,dark,demons,americana,,biography,college,graphic-novels
+chapter-books,business,class,death,epic,criticism,,biography-memoir,high-school,graphic-novels-comics
+harlequin,cookbooks,classic-literature,erotica,epic-fantasy,christianity,,collections,juvenile,manga
+british-literature,cooking,classics,horror,fairy-tales,christian,,canon,middle-grade,novella
+english-literature,cultural,christmas,menage,fantasy,christian-fiction,,memoir,new-adult,novels
 european-literature,economics,comedy,abuse,ghosts,gay,,,school,poetry
 france,education,contemporary,bdsm,high-fantasy,marriage,,,teen,retellings
 international,faith,cozy-mystery,,magic,lgbt,,,young-adult,short-stories
@@ -39,3 +39,10 @@ victorian,feminism,detective,,mythology,queer,,,,theatre
 ,travel,,,,,,,,
 ,writing,,,,,,,,
 ,medical,,,,,,,,
+,animals,,,,,,,,
+,nature,,,,,,,,
+,movies,,,,,,,,
+,picture-books,,,,,,,,
+,music,,,,,,,,
+,plays,,,,,,,,
+,film,,,,,,,,
