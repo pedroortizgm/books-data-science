@@ -16,3 +16,8 @@ To deactivate the environment just run:
 ```
 conda deactivate
 ```
+
+To start the Jupyter Notebook and make sure that the correct version is being used execute:
+```
+./start.sh
+```
