@@ -163,15 +163,18 @@ def get_books(your_key, writer, file, start, end, loop_step):
     for book_id in range(start, end + 1, loop_step):
         url = urlbase + str(book_id)
         logging.info(url)
-        r = requests.get(url, params=params)
-        if (r.status_code == 200):
-            try:
-                book = Book(ET.fromstring(r.text))
-                book.write_to_csv(writer)
-            except Exception as e:
-                logging.error("Error reading book " + str(book_id), exc_info = True)
-        else:
-            logging.error("Error reading book " + str(book_id) + ": " + str(r.status_code))
+        try: 
+            r = requests.get(url, params=params)
+            if (r.status_code == 200):
+                try:
+                    book = Book(ET.fromstring(r.text))
+                    book.write_to_csv(writer)
+                except Exception as e:
+                    logging.error("Error reading book " + str(book_id), exc_info = True)
+            else:
+                logging.error("Error reading book " + str(book_id) + ": " + str(r.status_code))
+        except Exception as e:
+            logging.error("Error reading book " + str(book_id))
         #time.sleep(1)
     file.close()
     return error
