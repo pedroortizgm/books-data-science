@@ -240,7 +240,7 @@ def main(argv):
     else:
         read_book(input_file, output_file)
 
-logging.basicConfig(filename="app.log", filemode="w", format="'%(name)s - %(levelname)s - %(message)s'", level=logging.INFO)
+logging.basicConfig(filename="app-"+str(os.getpid())+".log", filemode="w", format="'%(name)s - %(levelname)s - %(message)s'", level=logging.INFO)
 
 
 if __name__ == "__main__":
